@@ -1,5 +1,46 @@
-# Vue 3 + Vite
+# Warehouse Label Maker
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+A Vue.js application for generating warehouse labels with QR codes. Perfect for organizing warehouse storage with a clear, standardized labeling system.
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## Features
+
+- Generate labels with rack, level, and bin numbers (e.g., 001 A 001)
+- QR code generation with custom content support
+- Configurable dimensions and weight capacity
+- Optional directional arrows (up/down) with customizable position
+- PDF export in A6 format (10x15 cm)
+- Mobile-responsive interface
+
+## Installation
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+## Usage
+
+1. Enter the rack number (format: 001)
+2. Select the level (format: A)
+3. Enter the bin number (format: 001)
+4. Add optional dimensions and weight capacity
+5. Add optional directional arrows
+6. Optionally customize QR code content
+7. Click "Generate PDF" to create a printable label
+
+## Technologies Used
+
+- Vue.js 3
+- Tailwind CSS
+- QR Code generation
+- PDF export functionality
+
+## License
+
+MIT License
