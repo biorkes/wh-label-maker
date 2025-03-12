@@ -128,8 +128,8 @@ const handleCellClick = (label, cellIndex) => {
           </div>
 
           <!-- Dynamic forms based on number of levels -->
-          <div v-for="(label, index) in labelConfig.labels" :key="index" class="p-4 border rounded space-y-4">
-            <h3 class="font-semibold">Level {{ index + 1 }} Configuration</h3>
+          <div v-for="(label, index) in [...labelConfig.labels].reverse()" :key="index" class="p-4 border rounded space-y-4">
+            <h3 class="font-semibold">Level {{ labelConfig.labels.length - index }} Configuration</h3>
             
             <div class="grid grid-cols-3 gap-4">
               <div>
@@ -229,9 +229,9 @@ const handleCellClick = (label, cellIndex) => {
       <div class="bg-white p-4 rounded shadow">
         <h2 class="text-xl font-semibold mb-4">Label Preview</h2>
         
-        <div v-for="(page, pageIndex) in labelPages" :key="pageIndex" class="mb-8">
+        <div v-for="(page, pageIndex) in [...labelPages].reverse()" :key="pageIndex" class="mb-8">
           <div 
-            :id="'labelPage' + pageIndex"
+            :id="'labelPage' + (labelPages.length - 1 - pageIndex)"
             class="border-2 border-gray-400 rounded mx-auto bg-white"
             style="width: 105mm; height: 148mm;"
           >
