@@ -80,11 +80,13 @@ const generatePDF = async () => {
     const element = document.getElementById(`labelPage${page}`)
     const canvas = await html2canvas(element, {
       scale: 2,
-      useCORS: true
+      useCORS: true,
+      scrollX: 0,
+      scrollY: 0
     })
     
     const imgData = canvas.toDataURL('image/png')
-    pdf.addImage(imgData, 'PNG', 0, 0, 105, 148) // A6 dimensions
+    pdf.addImage(imgData, 'PNG', 0, 0, 105, 148)
   }
   
   pdf.save('warehouse-labels.pdf')
@@ -396,5 +398,15 @@ const handleCellClick = (label, cellIndex) => {
 
 body {
   background-color: #f3f4f6;
+}
+
+/* Fix for html2canvas PDF generation image shifting */
+img {
+  display: inline-block !important;
+}
+
+/* Ensure SVG elements (QR codes) are also properly handled */
+svg {
+  display: inline-block !important;
 }
 </style>
