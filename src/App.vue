@@ -118,7 +118,7 @@ const handleCellClick = (label, cellIndex) => {
         <h2 class="text-xl font-semibold mb-4">Label Configuration</h2>
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium mb-1">Number of Levels</label>
+            <label class="block text-sm font-medium mb-1">Number of Shelves</label>
             <input 
               v-model="labelConfig.numLevels" 
               type="number" 
@@ -129,11 +129,11 @@ const handleCellClick = (label, cellIndex) => {
 
           <!-- Dynamic forms based on number of levels -->
           <div v-for="(label, index) in [...labelConfig.labels].reverse()" :key="index" class="p-4 border rounded space-y-4">
-            <h3 class="font-semibold">Level {{ labelConfig.labels.length - index }} Configuration</h3>
+            <h3 class="font-semibold">Shelf {{ labelConfig.labels.length - index }} Configuration</h3>
             
             <div class="grid grid-cols-3 gap-4">
               <div>
-                <label class="block text-sm font-medium mb-1">Rack Number</label>
+                <label class="block text-sm font-medium mb-1">Aisle Number</label>
                 <input 
                   v-model="label.rack" 
                   type="text" 
@@ -144,7 +144,7 @@ const handleCellClick = (label, cellIndex) => {
                 >
               </div>
               <div>
-                <label class="block text-sm font-medium mb-1">Level Letter</label>
+                <label class="block text-sm font-medium mb-1">Shelf</label>
                 <input 
                   v-model="label.letter" 
                   type="text" 
@@ -189,7 +189,7 @@ const handleCellClick = (label, cellIndex) => {
             </div>
 
             <div>
-              <label class="block text-sm font-medium mb-1">Selected Cell (click to select)</label>
+              <label class="block text-sm font-medium mb-1">Selected Bin (click to select)</label>
               <div class="grid grid-cols-3 gap-0.5 w-32 mx-auto">
                 <div v-for="i in 9" :key="i-1" 
                   class="aspect-square border border-black cursor-pointer hover:bg-gray-200"
