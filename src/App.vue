@@ -237,11 +237,14 @@ const handleCellClick = (label, cellIndex) => {
           >
             <!-- Top Label -->
             <div v-if="page.topLabel" class="h-[72mm] border-b border-dotted border-black p-4 flex flex-col">
-              <div class="text-5xl font-black tracking-wider text-center mb-4">
+              <div class="text-5xl font-black tracking-wider text-center mb-1">
                 {{ formattedLabel(page.topLabel) }}
               </div>
+              <div class="text-1md font-bold tracking-wider text-center mb-2">
+                {{ page.topLabel.qrContent }}
+              </div>
               
-              <div class="flex flex-1 items-center">
+              <div class="flex items-center">
                 <!-- Left Column (40%) -->
                 <div class="w-[40%] pr-2">
                   <!-- QR Code -->
@@ -315,6 +318,9 @@ const handleCellClick = (label, cellIndex) => {
                 <div class="text-5xl font-black tracking-wider text-center mb-4">
                   {{ formattedLabel(page.bottomLabel) }}
                 </div>
+                <div class="text-1md font-bold tracking-wider text-center mb-2">
+                  {{ page.bottomLabel.qrContent }}
+                </div>
                 
                 <div class="flex items-center">
                   <!-- Left Column (60%) -->
@@ -323,6 +329,17 @@ const handleCellClick = (label, cellIndex) => {
                     <div class="flex">
                       <!-- Left Half (50%) -->
                       <div class="w-1/2 pr-1">
+                        <!-- Grid -->
+                        <div class="grid grid-cols-3 gap-0.5 w-full">
+                          <div v-for="i in 9" :key="i-1" 
+                            class="aspect-square border border-black"
+                            :class="{ 'bg-black': isSelectedCell(i-1, page.bottomLabel.selectedCell) }"
+                          ></div>
+                        </div>
+                      </div>
+
+                      <!-- Right Half (50%) -->
+                      <div class="w-1/2 pl-1">
                         <!-- Metrics -->
                         <div class="space-y-1">
                           <div class="border border-black px-1 py-0.5">
@@ -333,17 +350,6 @@ const handleCellClick = (label, cellIndex) => {
                             <div class="text-[10px]">MAX WEIGHT</div>
                             <div class="text-lg font-bold">{{ page.bottomLabel.maxWeight }} KG</div>
                           </div>
-                        </div>
-                      </div>
-
-                      <!-- Right Half (50%) -->
-                      <div class="w-1/2 pl-1">
-                        <!-- Grid -->
-                        <div class="grid grid-cols-3 gap-0.5 w-full">
-                          <div v-for="i in 9" :key="i-1" 
-                            class="aspect-square border border-black"
-                            :class="{ 'bg-black': isSelectedCell(i-1, page.bottomLabel.selectedCell) }"
-                          ></div>
                         </div>
                       </div>
                     </div>
