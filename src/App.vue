@@ -245,6 +245,87 @@ watch(
   },
   { deep: true }
 )
+
+// Add this new function after the existing imports
+const parseCsvRow = (row) => {
+  const [aisle, shelf, bin, height, maxWeight, arrow, qrContent] = row.split(',').map(val => val.trim())
+  return {
+    rack: aisle.padStart(3, '0'),
+    letter: shelf.toUpperCase(),
+    bin: bin.padStart(3, '0'),
+    height: parseInt(height) || 220,
+    maxWeight: parseInt(maxWeight) || 180,
+    selectedCell: null, // This will be calculated later
+    qrContent: qrContent || '',
+    arrowDirection: arrow === '0' ? 'left' : 'right'
+  }
+}
+
+// Add this method before the existing watchers
+const handleCsvUpload = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  try {
+    const text = await file.text()
+    const rows = text.split('\n')
+      .map(row => row.trim())
+      .filter(row => row.length > 0) // Remove empty rows
+    
+    // Remove header row if present
+    if (rows[0].toLowerCase().includes('aisle') || rows[0].toLowerCase().includes('shelf')) {
+      rows.shift()
+    }
+
+    // Parse CSV data
+    const labels = rows.map(row => parseCsvRow(row))
+    
+    // Update configuration based on the imported data
+    const uniqueShelves = new Set(labels.map(l => l.letter))
+    const uniqueRacks = new Set(labels.map(l => l.bin))
+    
+    // Update the configuration
+    labelConfig.value.numLevels = uniqueShelves.size
+    labelConfig.value.numRacks = uniqueRacks.size
+    labelConfig.value.currentRack = labels[0]?.rack || '001'
+    
+    // Calculate selectedCell for each label
+    labels.forEach(label => {
+      const shelfIndex = label.letter.charCodeAt(0) - 65
+      const binIndex = parseInt(label.bin) - 1
+      const reversedShelfIndex = (labelConfig.value.numLevels - 1) - shelfIndex
+      label.selectedCell = (reversedShelfIndex * labelConfig.value.numRacks) + binIndex
+    })
+    
+    // Update all labels
+    labelConfig.value.labels = labels
+    
+    // Reset file input
+    event.target.value = ''
+  } catch (error) {
+    console.error('Error processing CSV:', error)
+    alert('Error processing CSV file. Please check the format and try again.')
+  }
+}
+
+// Add this after handleCsvUpload function
+const downloadExampleCsv = () => {
+  const exampleData = `Aisle,Shelf,Bin,Height (cm),Max Weight (kg),Arrow (1=right/0=left),QR Code
+1,A,1,220,150,1,custom_qr_1
+1,A,2,220,180,0,custom_qr_2
+1,B,1,240,200,1,custom_qr_3
+1,B,2,240,190,0,custom_qr_4
+2,A,1,220,160,1,custom_qr_5
+2,A,2,220,170,0,custom_qr_6`
+
+  const blob = new Blob([exampleData], { type: 'text/csv' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.setAttribute('href', url)
+  a.setAttribute('download', 'warehouse-labels-example.csv')
+  a.click()
+  window.URL.revokeObjectURL(url)
+}
 </script>
 
 <template>
@@ -367,6 +448,39 @@ watch(
             <label for="shelfDivider" class="ml-2 text-xs font-medium">
               Show Thick Divider Between Different Shelves
             </label>
+          </div>
+        </div>
+
+      </div>
+
+      <div>
+        <!-- Bulk Import -->
+        <div class="mt-4">
+          <h3 class="text-sm font-semibold mb-2">Bulk Import</h3>
+          <div class="space-y-2">
+            <div>
+              <label class="block text-xs font-medium mb-1">Import from CSV</label>
+              <input 
+                type="file" 
+                accept=".csv"
+                @change="handleCsvUpload"
+                class="block w-full text-xs text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-blue-50 file:text-blue-700
+                  hover:file:bg-blue-100"
+              >
+            </div>
+            <div class="text-xs text-gray-500">
+              CSV Format: Aisle,Shelf,Bin,Height (cm),Max Weight (kg),Arrow (1=right/0=left),QR Code
+            </div>
+            <button 
+              @click="downloadExampleCsv"
+              class="mt-2 text-xs text-blue-600 hover:text-blue-800 underline"
+            >
+              Download Example CSV
+            </button>
           </div>
         </div>
       </div>
