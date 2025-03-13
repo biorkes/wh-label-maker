@@ -252,121 +252,125 @@ watch(
     <h1 class="text-2xl font-bold mb-4">Warehouse Label Generator</h1>
     
     <!-- Shelf and Rack Configuration -->
-    <div class="bg-white p-4 rounded shadow mb-4">
+    <div class="bg-white p-4 rounded shadow mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+
       <!-- Layout Configuration -->
-      <div class="border-b pb-4 mb-4">
-        <h3 class="text-sm font-semibold mb-2">Layout Configuration</h3>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-medium mb-1">Number of Shelves</label>
-            <div class="flex items-center">
-              <button 
-                @click="labelConfig.numLevels = Math.max(1, labelConfig.numLevels - 1)"
-                class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-l border border-r-0"
-              >
-                -
-              </button>
-              <input 
-                v-model="labelConfig.numLevels" 
-                type="number" 
-                min="1"
-                class="w-full p-1 border-y text-center text-sm"
-              >
-              <button 
-                @click="labelConfig.numLevels++"
-                class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-r border border-l-0"
-              >
-                +
-              </button>
+      <div>
+        <div class="border-b pb-4 mb-4">
+          <h3 class="text-sm font-semibold mb-2">Layout Configuration</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium mb-1">Number of Shelves</label>
+              <div class="flex items-center">
+                <button 
+                  @click="labelConfig.numLevels = Math.max(1, labelConfig.numLevels - 1)"
+                  class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-l border border-r-0"
+                >
+                  -
+                </button>
+                <input 
+                  v-model="labelConfig.numLevels" 
+                  type="number" 
+                  min="1"
+                  class="w-full p-1 border-y text-center text-sm"
+                >
+                <button 
+                  @click="labelConfig.numLevels++"
+                  class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-r border border-l-0"
+                >
+                  +
+                </button>
+              </div>
             </div>
-          </div>
-          <div>
-            <label class="block text-xs font-medium mb-1">Number of Racks</label>
-            <div class="flex items-center">
-              <button 
-                @click="labelConfig.numRacks = Math.max(1, labelConfig.numRacks - 1)"
-                class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-l border border-r-0"
-              >
-                -
-              </button>
-              <input 
-                v-model="labelConfig.numRacks" 
-                type="number" 
-                min="1"
-                class="w-full p-1 border-y text-center text-sm"
-              >
-              <button 
-                @click="labelConfig.numRacks++"
-                class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-r border border-l-0"
-              >
-                +
-              </button>
+            <div>
+              <label class="block text-xs font-medium mb-1">Number of Racks</label>
+              <div class="flex items-center">
+                <button 
+                  @click="labelConfig.numRacks = Math.max(1, labelConfig.numRacks - 1)"
+                  class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-l border border-r-0"
+                >
+                  -
+                </button>
+                <input 
+                  v-model="labelConfig.numRacks" 
+                  type="number" 
+                  min="1"
+                  class="w-full p-1 border-y text-center text-sm"
+                >
+                <button 
+                  @click="labelConfig.numRacks++"
+                  class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-r border border-l-0"
+                >
+                  +
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Height Configuration -->
-      <div class="border-b pb-4 mb-4">
-        <h3 class="text-sm font-semibold mb-2">Height Configuration</h3>
-        <div class="grid grid-cols-4 gap-2">
-          <div v-for="i in labelConfig.numLevels" :key="i">
-            <label class="block text-xs font-medium mb-1">
-              Shelf {{ String.fromCharCode(64 + i) }}
-            </label>
-            <input 
-              v-model="labelConfig.shelfHeights[String.fromCharCode(64 + i)]"
-              type="number"
-              class="w-full p-1 border rounded text-center text-sm"
-              placeholder="cm"
-            >
+        <!-- Height Configuration -->
+        <div class="border-b pb-4 mb-4">
+          <h3 class="text-sm font-semibold mb-2">Height Configuration</h3>
+          <div class="grid grid-cols-4 gap-2">
+            <div v-for="i in labelConfig.numLevels" :key="i">
+              <label class="block text-xs font-medium mb-1">
+                Shelf {{ String.fromCharCode(64 + i) }}
+              </label>
+              <input 
+                v-model="labelConfig.shelfHeights[String.fromCharCode(64 + i)]"
+                type="number"
+                class="w-full p-1 border rounded text-center text-sm"
+                placeholder="cm"
+              >
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Weight Configuration -->
-      <div class="border-b pb-4 mb-4">
-        <h3 class="text-sm font-semibold mb-2">Weight Configuration</h3>
-        <div class="space-y-2">
-          <div>
-            <label class="block text-xs font-medium mb-1">Max Weight Per Shelf</label>
-            <input 
-              v-model="labelConfig.maxWeightPerShelf"
-              type="number"
-              min="0"
-              class="w-full p-1 border rounded text-center text-sm"
-              placeholder="Enter total weight in kg"
-            >
+        <!-- Weight Configuration -->
+        <div class="border-b pb-4 mb-4">
+          <h3 class="text-sm font-semibold mb-2">Weight Configuration</h3>
+          <div class="space-y-2">
+            <div>
+              <label class="block text-xs font-medium mb-1">Max Weight Per Shelf</label>
+              <input 
+                v-model="labelConfig.maxWeightPerShelf"
+                type="number"
+                min="0"
+                class="w-full p-1 border rounded text-center text-sm"
+                placeholder="Enter total weight in kg"
+              >
+            </div>
+            <div class="flex items-center">
+              <input 
+                type="checkbox" 
+                id="skipAShelf" 
+                v-model="labelConfig.skipAShelf"
+                class="w-3 h-3 text-blue-600 rounded focus:ring-blue-500"
+              >
+              <label for="skipAShelf" class="ml-2 text-xs font-medium">
+                Skip A Shelf in Weight Distribution
+              </label>
+            </div>
           </div>
+        </div>
+        
+        <!-- Visual Options -->
+        <div>
+          <h3 class="text-sm font-semibold mb-2">Visual Options</h3>
           <div class="flex items-center">
             <input 
               type="checkbox" 
-              id="skipAShelf" 
-              v-model="labelConfig.skipAShelf"
+              id="shelfDivider" 
+              v-model="labelConfig.showShelfDivider"
               class="w-3 h-3 text-blue-600 rounded focus:ring-blue-500"
             >
-            <label for="skipAShelf" class="ml-2 text-xs font-medium">
-              Skip A Shelf in Weight Distribution
+            <label for="shelfDivider" class="ml-2 text-xs font-medium">
+              Show Thick Divider Between Different Shelves
             </label>
           </div>
         </div>
       </div>
-      
-      <!-- Visual Options -->
-      <div>
-        <h3 class="text-sm font-semibold mb-2">Visual Options</h3>
-        <div class="flex items-center">
-          <input 
-            type="checkbox" 
-            id="shelfDivider" 
-            v-model="labelConfig.showShelfDivider"
-            class="w-3 h-3 text-blue-600 rounded focus:ring-blue-500"
-          >
-          <label for="shelfDivider" class="ml-2 text-xs font-medium">
-            Show Thick Divider Between Different Shelves
-          </label>
-        </div>
-      </div>
+
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -700,6 +704,7 @@ watch(
 
 body {
   background-color: #f3f4f6;
+  min-height: 100vh;
 }
 
 /* Fix for html2canvas PDF generation image shifting */
@@ -710,5 +715,12 @@ img {
 /* Ensure SVG elements (QR codes) are also properly handled */
 svg {
   display: inline-block !important;
+}
+
+/* Add this to remove default margin and ensure content starts from top */
+.container {
+  margin: 0;
+  margin-top: 0;
+  padding-top: 1rem;
 }
 </style>
