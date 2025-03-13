@@ -672,12 +672,7 @@ const downloadExampleCsv = () => {
                         <div class="border border-black px-1 py-0.5 whitespace-nowrap">
                           <div class="text-[10px]">MAX W (KG)</div>
                           <div class="text-lg font-bold leading-none">
-                            <template v-if="labelConfig.skipAShelf && page.topLabel.letter === 'A'">
-                              N/A
-                            </template>
-                            <template v-else>
-                              ≤{{ page.topLabel.maxWeight }}
-                            </template>
+                            {{ page.topLabel.maxWeight === 0 ? 'N/A' : '≤' + page.topLabel.maxWeight }}
                           </div>
                         </div>
                       </div>
@@ -756,12 +751,7 @@ const downloadExampleCsv = () => {
                           <div class="border border-black px-1 py-0.5 whitespace-nowrap">
                             <div class="text-[10px]">MAX W (KG)</div>
                             <div class="text-lg font-bold leading-none">
-                              <template v-if="labelConfig.skipAShelf && page.bottomLabel.letter === 'A'">
-                                N/A
-                              </template>
-                              <template v-else>
-                                ≤{{ page.bottomLabel.maxWeight }}
-                              </template>
+                              {{ page.bottomLabel.maxWeight === 0 ? 'N/A' : '≤' + page.bottomLabel.maxWeight }}
                             </div>
                           </div>
                         </div>
