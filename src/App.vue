@@ -520,10 +520,10 @@ watch(
               >
                 <div class="w-full border-b border-dotted border-black"></div>
               </div>
-              <div class="text-5xl font-black tracking-wider text-center mb-2">
+              <div class="text-5xl font-black tracking-wider text-center mb-2 text-black">
                 {{ formattedLabel(page.topLabel) }}
               </div>
-              <div class="text-1md font-bold tracking-wider text-center mb-2">
+              <div class="text-1md font-bold tracking-wider text-center mb-2 text-black">
                 {{ page.topLabel.qrContent }}
               </div>
               
@@ -606,10 +606,10 @@ watch(
             ]">
               <div class="flex-1"></div>
               <div>
-                <div class="text-5xl font-black tracking-wider text-center mb-1">
+                <div class="text-5xl font-black tracking-wider text-center mb-1 text-black">
                   {{ formattedLabel(page.bottomLabel) }}
                 </div>
-                <div class="text-1md font-bold tracking-wider text-center mb-2">
+                <div class="text-1md font-bold tracking-wider text-center mb-2 text-black">
                   {{ page.bottomLabel.qrContent }}
                 </div>
                 
