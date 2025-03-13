@@ -116,22 +116,42 @@ const generatePDF = async () => {
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
-    format: 'a6'
+    format: 'a6',
+    compress: true,
+    precision: 4
   })
   
-  for (let page = 0; page < totalPages.value; page++) {
-    if (page > 0) pdf.addPage()
+  // Get total pages and iterate in reverse to match preview order
+  const totalPagesCount = totalPages.value
+  for (let i = 0; i < totalPagesCount; i++) {
+    if (i > 0) pdf.addPage()
     
-    const element = document.getElementById(`labelPage${page}`)
+    // Calculate the correct page index to match preview order
+    const pageIndex = totalPagesCount - 1 - i
+    const element = document.getElementById(`labelPage${pageIndex}`)
     const canvas = await html2canvas(element, {
-      scale: 2,
+      scale: 3,
       useCORS: true,
       scrollX: 0,
-      scrollY: 0
+      scrollY: 0,
+      imageTimeout: 0,
+      removeContainer: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      allowTaint: true,
+      letterRendering: true,
+      windowWidth: element.scrollWidth,
+      windowHeight: element.scrollHeight,
+      onclone: (clonedDoc) => {
+        const clonedElement = clonedDoc.getElementById(`labelPage${pageIndex}`)
+        if (clonedElement) {
+          clonedElement.style.transform = 'none'
+        }
+      }
     })
     
-    const imgData = canvas.toDataURL('image/png')
-    pdf.addImage(imgData, 'PNG', 0, 0, 105, 148)
+    const imgData = canvas.toDataURL('image/jpeg', 1.0)
+    pdf.addImage(imgData, 'JPEG', 0, 0, 105, 148, undefined, 'MEDIUM')
   }
   
   pdf.save('warehouse-labels.pdf')
@@ -344,7 +364,7 @@ const activeLabel = ref(null)
       </div>
 
       <!-- Label Preview -->
-      <div class="bg-white p-4 rounded shadow">
+      <div class="p-4 rounded shadow" style="background-color: #f0f8ff;">
         <h2 class="text-xl font-semibold mb-4">Label Preview - A6 Format</h2>
         
         <div v-for="(page, pageIndex) in [...labelPages].reverse()" :key="pageIndex" class="mb-8">
