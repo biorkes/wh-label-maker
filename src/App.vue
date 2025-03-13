@@ -10,6 +10,10 @@ const labelConfig = ref({
   numLevels: 1,
   numRacks: 1,
   currentRack: '001',
+  showShelfDivider: false,
+  maxWeightPerShelf: '',
+  skipAShelf: false,
+  shelfHeights: {},
   labels: [{
     rack: '001',
     letter: 'A',
@@ -192,6 +196,55 @@ const isOddIndexedLetter = (letter) => {
 
 // Add new ref for tracking active label
 const activeLabel = ref(null)
+
+// Add weight distribution calculation
+const calculateDistributedWeight = (totalWeight, numShelves, numRacks, skipAShelf) => {
+  const effectiveShelves = skipAShelf ? numShelves - 1 : numShelves
+  if (effectiveShelves <= 0 || numRacks <= 0) return 0
+  
+  const weightPerShelf = Math.floor(totalWeight / effectiveShelves)
+  return Math.floor(weightPerShelf / numRacks)
+}
+
+// Watch for changes in weight-related configurations
+watch(
+  [
+    () => labelConfig.value.maxWeightPerShelf,
+    () => labelConfig.value.numLevels,
+    () => labelConfig.value.numRacks,
+    () => labelConfig.value.skipAShelf
+  ],
+  ([newWeight, numLevels, numRacks, skipAShelf]) => {
+    if (!newWeight) return
+    
+    const totalWeight = parseInt(newWeight)
+    if (isNaN(totalWeight)) return
+    
+    const distributedWeight = calculateDistributedWeight(totalWeight, numLevels, numRacks, skipAShelf)
+    
+    labelConfig.value.labels.forEach(label => {
+      // If skipAShelf is true and this is shelf A, set weight to 0
+      if (skipAShelf && label.letter === 'A') {
+        label.maxWeight = 0
+      } else {
+        label.maxWeight = distributedWeight
+      }
+    })
+  }
+)
+
+// Add watch for shelf heights
+watch(
+  () => labelConfig.value.shelfHeights,
+  (newHeights) => {
+    labelConfig.value.labels.forEach(label => {
+      if (newHeights[label.letter] !== undefined) {
+        label.height = newHeights[label.letter]
+      }
+    })
+  },
+  { deep: true }
+)
 </script>
 
 <template>
@@ -200,52 +253,118 @@ const activeLabel = ref(null)
     
     <!-- Shelf and Rack Configuration -->
     <div class="bg-white p-4 rounded shadow mb-4">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-1">Number of Shelves</label>
-          <div class="flex items-center">
-            <button 
-              @click="labelConfig.numLevels = Math.max(1, labelConfig.numLevels - 1)"
-              class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-l border border-r-0"
-            >
-              -
-            </button>
-            <input 
-              v-model="labelConfig.numLevels" 
-              type="number" 
-              min="1"
-              class="w-full p-2 border-y text-center"
-            >
-            <button 
-              @click="labelConfig.numLevels++"
-              class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-r border border-l-0"
-            >
-              +
-            </button>
+      <!-- Layout Configuration -->
+      <div class="border-b pb-4 mb-4">
+        <h3 class="text-sm font-semibold mb-2">Layout Configuration</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium mb-1">Number of Shelves</label>
+            <div class="flex items-center">
+              <button 
+                @click="labelConfig.numLevels = Math.max(1, labelConfig.numLevels - 1)"
+                class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-l border border-r-0"
+              >
+                -
+              </button>
+              <input 
+                v-model="labelConfig.numLevels" 
+                type="number" 
+                min="1"
+                class="w-full p-1 border-y text-center text-sm"
+              >
+              <button 
+                @click="labelConfig.numLevels++"
+                class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-r border border-l-0"
+              >
+                +
+              </button>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-medium mb-1">Number of Racks</label>
+            <div class="flex items-center">
+              <button 
+                @click="labelConfig.numRacks = Math.max(1, labelConfig.numRacks - 1)"
+                class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-l border border-r-0"
+              >
+                -
+              </button>
+              <input 
+                v-model="labelConfig.numRacks" 
+                type="number" 
+                min="1"
+                class="w-full p-1 border-y text-center text-sm"
+              >
+              <button 
+                @click="labelConfig.numRacks++"
+                class="px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-r border border-l-0"
+              >
+                +
+              </button>
+            </div>
           </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Number of Racks</label>
-          <div class="flex items-center">
-            <button 
-              @click="labelConfig.numRacks = Math.max(1, labelConfig.numRacks - 1)"
-              class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-l border border-r-0"
-            >
-              -
-            </button>
+      </div>
+
+      <!-- Height Configuration -->
+      <div class="border-b pb-4 mb-4">
+        <h3 class="text-sm font-semibold mb-2">Height Configuration</h3>
+        <div class="grid grid-cols-4 gap-2">
+          <div v-for="i in labelConfig.numLevels" :key="i">
+            <label class="block text-xs font-medium mb-1">
+              Shelf {{ String.fromCharCode(64 + i) }}
+            </label>
             <input 
-              v-model="labelConfig.numRacks" 
-              type="number" 
-              min="1"
-              class="w-full p-2 border-y text-center"
+              v-model="labelConfig.shelfHeights[String.fromCharCode(64 + i)]"
+              type="number"
+              class="w-full p-1 border rounded text-center text-sm"
+              placeholder="cm"
             >
-            <button 
-              @click="labelConfig.numRacks++"
-              class="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-r border border-l-0"
-            >
-              +
-            </button>
           </div>
+        </div>
+      </div>
+
+      <!-- Weight Configuration -->
+      <div class="border-b pb-4 mb-4">
+        <h3 class="text-sm font-semibold mb-2">Weight Configuration</h3>
+        <div class="space-y-2">
+          <div>
+            <label class="block text-xs font-medium mb-1">Max Weight Per Shelf</label>
+            <input 
+              v-model="labelConfig.maxWeightPerShelf"
+              type="number"
+              min="0"
+              class="w-full p-1 border rounded text-center text-sm"
+              placeholder="Enter total weight in kg"
+            >
+          </div>
+          <div class="flex items-center">
+            <input 
+              type="checkbox" 
+              id="skipAShelf" 
+              v-model="labelConfig.skipAShelf"
+              class="w-3 h-3 text-blue-600 rounded focus:ring-blue-500"
+            >
+            <label for="skipAShelf" class="ml-2 text-xs font-medium">
+              Skip A Shelf in Weight Distribution
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Visual Options -->
+      <div>
+        <h3 class="text-sm font-semibold mb-2">Visual Options</h3>
+        <div class="flex items-center">
+          <input 
+            type="checkbox" 
+            id="shelfDivider" 
+            v-model="labelConfig.showShelfDivider"
+            class="w-3 h-3 text-blue-600 rounded focus:ring-blue-500"
+          >
+          <label for="shelfDivider" class="ml-2 text-xs font-medium">
+            Show Thick Divider Between Different Shelves
+          </label>
         </div>
       </div>
     </div>
@@ -254,23 +373,27 @@ const activeLabel = ref(null)
       <!-- Label Configuration Form -->
       <div class="bg-white p-4 rounded shadow">
         <h2 class="text-xl font-semibold mb-4">Label Configuration</h2>
-        <div class="space-y-4">
+        <div class="space-y-3">
           <!-- Dynamic forms based on number of levels -->
           <div v-for="(label, index) in [...labelConfig.labels].reverse()" :key="index" 
-            class="p-4 border rounded space-y-4 transition-all duration-200 hover:border-orange-400"
+            class="p-3 border rounded space-y-3 transition-all duration-200 hover:border-orange-400"
             :class="{ 'border-orange-500 border-2': activeLabel === index }"
             @mouseenter="activeLabel = index"
             @mouseleave="activeLabel = null"
           >
-            <h3 class="font-semibold">Shelf {{ labelConfig.labels.length - index }} Configuration</h3>
+            <div class="flex justify-between items-center">
+              <h3 class="text-sm font-semibold">Bin # {{ labelConfig.labels.length - index }}</h3>
+              <div class="text-xs text-gray-500">{{ formattedLabel(label) }}</div>
+            </div>
             
-            <div class="grid grid-cols-3 gap-4">
+            <!-- Basic Info -->
+            <div class="grid grid-cols-3 gap-2">
               <div>
-                <label class="block text-sm font-medium mb-1">Aisle Number</label>
+                <label class="block text-xs font-medium mb-1">Aisle</label>
                 <input 
                   v-model="label.rack" 
                   type="text" 
-                  class="w-full p-2 border rounded"
+                  class="w-full p-1 border rounded text-sm text-center"
                   pattern="[0-9]{3}"
                   placeholder="001"
                   required
@@ -278,22 +401,22 @@ const activeLabel = ref(null)
                 >
               </div>
               <div>
-                <label class="block text-sm font-medium mb-1">Shelf</label>
+                <label class="block text-xs font-medium mb-1">Shelf</label>
                 <input 
                   v-model="label.letter" 
                   type="text" 
-                  class="w-full p-2 border rounded"
+                  class="w-full p-1 border rounded text-sm text-center"
                   maxlength="1"
                   pattern="[A-Za-z]"
                   required
                 >
               </div>
               <div>
-                <label class="block text-sm font-medium mb-1">Bin Number</label>
+                <label class="block text-xs font-medium mb-1">Bin</label>
                 <input 
                   v-model="label.bin" 
                   type="text" 
-                  class="w-full p-2 border rounded"
+                  class="w-full p-1 border rounded text-sm text-center"
                   pattern="[0-9]{3}"
                   placeholder="002"
                   required
@@ -301,61 +424,63 @@ const activeLabel = ref(null)
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <!-- Metrics -->
+            <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="block text-sm font-medium mb-1">Height (cm)</label>
+                <label class="block text-xs font-medium mb-1">Height (cm)</label>
                 <input 
                   v-model="label.height" 
                   type="number" 
-                  class="w-full p-2 border rounded"
+                  class="w-full p-1 border rounded text-sm text-center"
                   required
                 >
               </div>
               <div>
-                <label class="block text-sm font-medium mb-1">Max Weight (kg)</label>
+                <label class="block text-xs font-medium mb-1">Max Weight (kg)</label>
                 <input 
                   v-model="label.maxWeight" 
                   type="number" 
-                  class="w-full p-2 border rounded"
+                  class="w-full p-1 border rounded text-sm text-center"
                   required
                 >
               </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-4">
+              <!-- Left Column -->
+              <div class="space-y-2">
+                <div>
+                  <label class="block text-xs font-medium mb-1">QR Code Content</label>
+                  <input 
+                    v-model="label.qrContent" 
+                    type="text" 
+                    class="w-full p-1 border rounded text-sm"
+                    placeholder="Enter QR code content"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium mb-1">Arrow Direction</label>
+                  <select 
+                    v-model="label.arrowDirection" 
+                    class="w-full p-1 border rounded text-sm"
+                    required
+                  >
+                    <option value="right">Right</option>
+                    <option value="left">Left</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Right Column -->
               <div>
-                <label class="block text-sm text-center font-medium mb-1">Selected Bin (click to select)</label>
+                <label class="block text-xs text-center font-medium mb-1">Selected Position</label>
                 <div class="grid gap-0.5 mx-auto" :style="gridStyle">
                   <div v-for="i in totalCells" :key="i-1" 
                     class="border border-black cursor-pointer hover:bg-gray-200"
                     :class="{ 'bg-black hover:bg-black': isSelectedCell(i-1, label.selectedCell) }"
                     @click="handleCellClick(label, i-1)"
                   ></div>
-                </div>
-              </div>
-
-              <div class="space-y-4">
-                <div>
-                  <label class="block text-sm font-medium mb-1">QR Code Content</label>
-                  <input 
-                    v-model="label.qrContent" 
-                    type="text" 
-                    class="w-full p-2 border rounded"
-                    placeholder="Enter QR code content"
-                    required
-                  >
-                </div>
-
-                <div>
-                  <label class="block text-sm font-medium mb-1">Arrow Direction</label>
-                  <select 
-                    v-model="label.arrowDirection" 
-                    class="w-full p-2 border rounded"
-                    required
-                  >
-                    <option value="right">Right</option>
-                    <option value="left">Left</option>
-                  </select>
                 </div>
               </div>
             </div>
@@ -375,9 +500,26 @@ const activeLabel = ref(null)
           >
             <!-- Top Label -->
             <div v-if="page.topLabel" 
-              class="h-[72mm] border-b border-dotted border-black p-5 flex flex-col transition-colors duration-200"
-              :class="{ 'border-2 border-orange-500': activeLabel === ((labelPages.length - 1 - pageIndex) * 2 + 1) }"
+              class="h-[72mm] p-5 flex flex-col transition-colors duration-200 relative"
+              :class="[
+                { 'border-2 border-orange-500': activeLabel === ((labelPages.length - 1 - pageIndex) * 2 + 1) }
+              ]"
             >
+              <div 
+                v-if="labelConfig.showShelfDivider && page.topLabel.letter !== page.bottomLabel.letter" 
+                class="absolute bottom-0 left-0 right-0 flex flex-col items-center"
+              >
+                <div class="w-full h-[6px] bg-black"></div>
+                <div class="w-full h-[6px] flex justify-between items-center mt-[2px]">
+                  <div v-for="n in 20" :key="n" class="w-[6px] h-[6px] rounded-full bg-black"></div>
+                </div>
+              </div>
+              <div 
+                v-else 
+                class="absolute bottom-0 left-0 right-0"
+              >
+                <div class="w-full border-b border-dotted border-black"></div>
+              </div>
               <div class="text-5xl font-black tracking-wider text-center mb-2">
                 {{ formattedLabel(page.topLabel) }}
               </div>
@@ -406,12 +548,19 @@ const activeLabel = ref(null)
                     <div class="w-1/3">
                       <div class="space-y-1">
                         <div class="border border-black px-1 py-0.5 whitespace-nowrap">
-                          <div class="text-[10px]">HEIGHT CM</div>
+                          <div class="text-[10px]">MAX H (CM)</div>
                           <div class="text-lg font-bold">{{ page.topLabel.height }}</div>
                         </div>
                         <div class="border border-black px-1 py-0.5 whitespace-nowrap">
-                          <div class="text-[10px]">MAX WEIGHT</div>
-                          <div class="text-lg font-bold">{{ page.topLabel.maxWeight }} KG</div>
+                          <div class="text-[10px]">MAX W (KG)</div>
+                          <div class="text-lg font-bold leading-none">
+                            <template v-if="labelConfig.skipAShelf && page.topLabel.letter === 'A'">
+                              N/A
+                            </template>
+                            <template v-else>
+                              ≤{{ page.topLabel.maxWeight }}
+                            </template>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -483,12 +632,19 @@ const activeLabel = ref(null)
                       <div class="w-1/3">
                         <div class="space-y-1">
                           <div class="border border-black px-1 py-0.5 whitespace-nowrap">
-                            <div class="text-[10px]">HEIGHT CM</div>
+                            <div class="text-[10px]">MAX H (CM)</div>
                             <div class="text-lg font-bold">{{ page.bottomLabel.height }}</div>
                           </div>
                           <div class="border border-black px-1 py-0.5 whitespace-nowrap">
-                            <div class="text-[10px]">MAX WEIGHT</div>
-                            <div class="text-lg font-bold">{{ page.bottomLabel.maxWeight }} KG</div>
+                            <div class="text-[10px]">MAX W (KG)</div>
+                            <div class="text-lg font-bold leading-none">
+                              <template v-if="labelConfig.skipAShelf && page.bottomLabel.letter === 'A'">
+                                N/A
+                              </template>
+                              <template v-else>
+                                ≤{{ page.bottomLabel.maxWeight }}
+                              </template>
+                            </div>
                           </div>
                         </div>
                       </div>
